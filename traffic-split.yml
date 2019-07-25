@@ -1,0 +1,12 @@
+apiVersion: split.smi-spec.io/v1alpha1
+kind: TrafficSplit
+metadata:
+  name: booksapp-rollout
+  namespace: booksapp
+spec:
+  service: webapp-split
+  backends:
+  - service: webapp
+    weight: 1
+  - service: webapp-v0-0-4
+    weight: 0m

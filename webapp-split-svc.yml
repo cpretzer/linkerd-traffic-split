@@ -1,0 +1,13 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: webapp-split
+  namespace: booksapp
+spec:
+  selector:
+    app: webapp
+  ports:
+  - name: http
+    port: 7000
+    targetPort: 7000
+

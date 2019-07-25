@@ -1,0 +1,53 @@
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: webapp-v0.0.4
+  namespace: booksapp
+  labels:
+    app: webapp
+    version: v0.0.4
+spec:
+  replicas: 1
+  strategy: {}
+  template:
+    metadata:
+      labels:
+        app: webapp
+        version: v0.0.4
+    spec:
+      dnsPolicy: ClusterFirst
+      containers:
+        - name: service
+          image: buoyantio/booksapp:v0.0.4
+          env:
+            - name: DATABASE_URL
+              value: sqlite3:db/db.sqlite3
+            - name: AUTHORS_SITE
+              value: http://authors:7001
+            - name: BOOKS_SITE
+              value: http://books:7002
+          args: ["prod:webapp"]
+          readinessProbe:
+            httpGet:
+              path: /ping
+              port: 7000
+          ports:
+            - name: service
+              containerPort: 7000
+
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: webapp-v0-0-4
+  namespace: booksapp
+spec:
+  type: LoadBalancer
+  selector:
+    app: webapp
+    version: v0.0.4
+  ports:
+  - name: http
+    port: 7000
+    targetPort: 7000
