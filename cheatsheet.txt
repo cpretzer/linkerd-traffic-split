@@ -169,5 +169,19 @@ open http://$(kubectl get svc webapp-v4 -n booksapp -ojsonpath={.status.loadBala
 
 watch linkerd stat deploy -n booksapp webapp webapp-v4
 
+# Update the endpoint that is called for traffic service: - "webapp-split:7000"
+kubectl edit deploy/traffic -n booksapp
+
+# Debugging
+
+## Tap
+linkerd tap -n booksapp deploy/webapp -o wide
+
+## Debug container
+kubectl get deploy/books -n booksapp -oyaml | linkerd inject --enable-debug-sidecar - > books-debug.yml
+kubectl apply -f books-debug.yml
+
+kubectl logs -f deploy/books linkerd-debug
+
 
 
