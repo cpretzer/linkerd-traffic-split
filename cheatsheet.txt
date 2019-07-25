@@ -169,8 +169,14 @@ open http://$(kubectl get svc webapp-v4 -n booksapp -ojsonpath={.status.loadBala
 
 watch linkerd stat deploy -n booksapp webapp webapp-v4
 
+kubectl log -f deploy/webapp -n booksapp -c service
+kubectl log -f deploy/webapp-v4 -n booksapp -c service
+
 # Update the endpoint that is called for traffic service: - "webapp-split:7000"
 kubectl edit deploy/traffic -n booksapp
+
+# Update the traffic weights
+kubectl edit ts booksapp-rollout -n booksapp
 
 # Debugging
 
