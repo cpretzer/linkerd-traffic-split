@@ -1,16 +1,15 @@
----
 apiVersion: v1
 kind: Service
 metadata:
   name: webapp
+  namespace: booksapp
   labels:
     app: webapp
-    project: booksapp
 spec:
+  type: LoadBalancer
   selector:
     app: webapp
     version: v0.0.3
-  type: LoadBalancer
   ports:
   - name: service
     port: 7000
@@ -21,14 +20,16 @@ metadata:
   name: webapp
   labels:
     app: webapp
-    project: booksapp
 spec:
   replicas: 1
+  selector:
+    matchLabels:
+      app: webapp
+      version: v0.0.3
   template:
     metadata:
       labels:
         app: webapp
-        project: booksapp
         version: v0.0.3
     spec:
       dnsPolicy: ClusterFirst
@@ -75,6 +76,10 @@ metadata:
     project: booksapp
 spec:
   replicas: 1
+  selector:
+    matchLabels:
+      app: authors
+      project: booksapp
   template:
     metadata:
       labels:
@@ -125,6 +130,10 @@ metadata:
     project: booksapp
 spec:
   replicas: 1
+  selector:
+    matchLabels:
+      app: books
+      project: booksapp
   template:
     metadata:
       labels:

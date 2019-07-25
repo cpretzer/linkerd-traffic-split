@@ -1,0 +1,173 @@
+# These instructions assume that a cluster is already available to you
+# Ensure that you can connect to the cluster and that kubectl is installed
+
+# Windows https://storage.googleapis.com/kubernetes-release/release/v1.15.0/bin/windows/amd64/kubectl.exe
+curl -LO https://storage.googleapis.com/kubernetes-release/release/v1.15.0/bin/windows/amd64/kubectl.exe
+
+# Linux
+curl -LO https://storage.googleapis.com/kubernetes-release/release/$(curl -s https://storage.googleapis.com/kubernetes-release/release/stable.txt)/bin/linux/amd64/kubectl
+
+# Mac
+curl -LO https://storage.googleapis.com/kubernetes-release/release/$(curl -s https://storage.googleapis.com/kubernetes-release/release/stable.txt)/bin/darwin/amd64/kubectl
+
+kubectl version --short
+
+# Install booksapp
+## Create and use the namespace
+kubectl create ns booksapp
+
+kubectl config set-context $(kubectl config current-context) --namespace=booksapp
+
+# Clone the repository
+git clone https://github.com/cpretzer/linkerd-traffic-split
+
+# Installing booksapp
+kubectl apply -f booksapp.yml
+
+# watch the pods startup
+kubectl get po -w
+
+# verify that the service has an external endpoint
+kubectl get svc -w
+
+# get the external URL and verify that the page loads
+open http://$(kubectl get svc webapp -n booksapp -ojsonpath={.status.loadBalancer.ingress[].ip}):7000
+
+# install linkerd cli
+curl -sL https://run.linkerd.io/install > install.sh
+
+# verify the file
+sh install.sh
+
+## Windows
+# Download the executable from https://github.com/linkerd/linkerd2/releases/download/stable-2.4.0/linkerd2-cli-stable-2.4.0-windows.exe
+# and add it to your PATH environment variable as "linkerd.exe"
+
+# verify the cli installation
+linkerd version
+
+# run a pre-check
+linkerd check --pre
+
+# view the linkerd control plane resources
+linkerd install
+
+# deploy linkerd control plane resources to the cluster
+linkerd install | kubectl apply -f -
+
+# check the linkerd control plane resources
+linkerd check
+
+# view the control plane resources in the linkerd namespace
+kubectl get po -n linkerd
+kubectl get deploy -n linkerd
+kubectl get svc -n linkerd
+
+# open the dashboard
+linkerd dashboard
+
+# update the booksapp namespace to enable automatic proxy injection
+kubectl annotate ns booksapp linkerd.io/inject=enabled
+
+# restart the deployments to inject the pods
+kubectl rollout restart deploy -n booksapp
+
+# verify that the pods start and that there are two containers per pod
+kubectl get po -w -n booksapp
+
+# use linkerd tap
+linkerd tap -n booksapp deploy/webapp -o wide
+linkerd routes -n booksapp deploy/webapp --to svc/books -o wide
+linkerd edges -n booksapp deploy
+
+# create service profiles
+
+# webapp
+linkerd profile --open-api webapp.swagger -n booksapp webapp > webapp-sp.yml
+kubectl apply -f webapp-sp.yml
+
+# books
+linkerd profile --open-api books.swagger -n booksapp books > books-sp.yml
+kubectl apply -f books-sp.yml
+
+# webapp
+linkerd profile --open-api authors.swagger -n booksapp authors > authors-sp.yml
+kubectl apply -f authors-sp.yml
+
+# Install the ingress
+
+# ingress controller deployment
+kubectl apply -f ingress-mandatory.yml
+kubectl apply -f cloud-generic.yaml
+
+# ensure that the ingress controller pod is running
+kubectl get po -n ingress-nginx
+
+# deploy the ingress service
+kubectl apply -f nginx-ingress-svc.yml 
+
+# view the service
+kubectl get svc ingress-nginx -n ingress-nginx -o wide
+
+# deploy the ingress resource
+kubectl apply -f books-ingress.yml
+
+# get the ingress External IP address and make sure that it works
+kubectl get svc -w -n ingress-nginx # until the EXTERNAL-IP address is no longer <pending>
+open https://$(kubectl get svc ingress-nginx -n ingress-nginx -ojsonpath={.status.loadBalancer.ingress[].ip})
+
+# Inject the proxy to the ingress-controller
+kubectl annotate ns ingress-nginx -n ingress-nginx linkerd.io/inject=enabled
+kubectl rollout restart deploy -n ingress-nginx
+
+# Watch the pods and reload the page when the the new pod is running
+kubectl get po -w -n ingress-nginx
+
+# Working with Retries and Timeouts
+
+## observe the error statistics
+linkerd -n booksapp routes deploy/books --to svc/authors
+
+## update the configuration to include retries
+kubectl edit sp authors.booksapp.svc.cluster.local -n booksapp
+
+# add isRetryable: true to the path named HEAD /authors/{id}.json
+# should be the last line
+
+## observe the statistics again and ensure that they improve
+linkerd -n booksapp routes deploy/books --to svc/authors
+
+# timeouts
+
+## observe the latencies
+linkerd routes -n booksapp deploy/webapp --to svc/books -t 1m -o wide
+
+## add timeout: 25ms to the path named HEAD /authors/{id}.json on the last line
+kubectl edit sp books.booksapp.svc.cluster.local
+
+## observe that effective success fails
+linkerd -n booksapp routes deploy/webapp --to svc/books -o wide
+
+# Traffic Split
+
+## Create a new split service
+kubectl apply -f webapp-split-svc.yml
+
+## Update the ingress
+kubectl apply -f books-split-ingress.yml
+
+## Create the traffic split resource
+kubectl apply -f traffic-split.yml
+
+## Create the v4 Deployment and Service
+kubectl apply -f web-svc-v4.yml
+
+## Open the v4 service in the browser
+open http://$(kubectl get svc webapp-v4 -n booksapp -ojsonpath={.status.loadBalancer.ingress[].ip}):7000
+
+## Observe that the split service has no public endpoint
+
+watch linkerd stat deploy -n booksapp webapp webapp-v4
+
+
+

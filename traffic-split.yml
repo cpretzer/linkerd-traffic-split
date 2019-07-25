@@ -8,5 +8,5 @@ spec:
   backends:
   - service: webapp
     weight: 1
-  - service: webapp-v0-0-4
+  - service: webapp-v4
     weight: 0m
