@@ -70,7 +70,8 @@ linkerd dashboard
 kubectl annotate ns booksapp linkerd.io/inject=enabled
 
 # restart the deployments to inject the pods
-kubectl rollout restart deploy -n booksapp
+# kubectl rollout restart deploy -n booksapp # 1.15.0 ONLY
+kubectl delete po --all -n booksapp
 
 # verify that the pods start and that there are two containers per pod
 kubectl get po -w -n booksapp
@@ -118,7 +119,7 @@ open https://$(kubectl get svc ingress-nginx -n ingress-nginx -ojsonpath={.statu
 
 # Inject the proxy to the ingress-controller
 kubectl annotate ns ingress-nginx -n ingress-nginx linkerd.io/inject=enabled
-kubectl rollout restart deploy -n ingress-nginx
+kubectl delete po --all -n ingress-nginx
 
 # Watch the pods and reload the page when the the new pod is running
 kubectl get po -w -n ingress-nginx
@@ -143,7 +144,7 @@ linkerd -n booksapp routes deploy/books --to svc/authors
 linkerd routes -n booksapp deploy/webapp --to svc/books -t 1m -o wide
 
 ## add timeout: 25ms to the path named HEAD /authors/{id}.json on the last line
-kubectl edit sp books.booksapp.svc.cluster.local
+kubectl edit sp authors.booksapp.svc.cluster.local
 
 ## observe that effective success fails
 linkerd -n booksapp routes deploy/webapp --to svc/books -o wide
