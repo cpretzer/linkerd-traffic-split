@@ -159,7 +159,7 @@ spec:
           containerPort: 7002
 ---
 kind: Deployment
-apiVersion: extensions/v1beta1
+apiVersion: apps/v1
 metadata:
   name: traffic
   labels:
@@ -167,10 +167,16 @@ metadata:
     project: booksapp
 spec:
   replicas: 1
+  selector:
+    matchLabels:
+      app: traffic
+      version: v0.0.3
+      project: booksapp
   template:
     metadata:
       labels:
         app: traffic
+        version: v0.0.3
         project: booksapp
     spec:
       dnsPolicy: ClusterFirst

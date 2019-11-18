@@ -1,0 +1,28 @@
+apiVersion: linkerd.io/v1alpha2
+kind: ServiceProfile
+metadata:
+  creationTimestamp: null
+  name: authors.booksapp.svc.cluster.local
+  namespace: booksapp
+spec:
+  routes:
+  - condition:
+      method: GET
+      pathRegex: /authors\.json
+    name: GET /authors.json
+  - condition:
+      method: POST
+      pathRegex: /authors\.json
+    name: POST /authors.json
+  - condition:
+      method: DELETE
+      pathRegex: /authors/[^/]*\.json
+    name: DELETE /authors/{id}.json
+  - condition:
+      method: GET
+      pathRegex: /authors/[^/]*\.json
+    name: GET /authors/{id}.json
+  - condition:
+      method: HEAD
+      pathRegex: /authors/[^/]*\.json
+    name: HEAD /authors/{id}.json
