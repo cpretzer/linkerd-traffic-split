@@ -57,6 +57,7 @@ http://<output from command above>:7000
 
 # check the linkerd control plane resources
 `linkerd check`
+`kubectl get po -n linkerd`
 
 # view the control plane resources in the linkerd namespace
 `kubectl get po -n linkerd`

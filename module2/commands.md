@@ -5,6 +5,7 @@
 `kubectl apply -f https://raw.githubusercontent.com/kubernetes/ingress-nginx/master/deploy/static/provider/cloud-generic.yaml`
 
 ## Delete the nginx ingress LimitRange (This is for dev purposes only)
+`kubectl get LimitRange -n ingress-nginx ingress-nginx -oyaml`
 `kubectl delete LimitRange -n ingress-nginx ingress-nginx`
 
 # ensure that the ingress controller pod is running
@@ -25,7 +26,7 @@
 
 # use the output from the previous command in the address bar of your browser
 ## Note: we are currently using http and not https
-http://<output from previous command>:7000
+http://<output from previous command>
 
 # Go to the linkerd dashboard tab in your browser
 
@@ -36,6 +37,8 @@ http://<output from previous command>:7000
 # Apply the injected ingress controller deployment yaml
 `kubectl get deploy -n ingress-nginx nginx-ingress-controller -oyaml | linkerd inject - | kubectl apply -f -`
 `kubectl rollout restart deploy -n ingress-nginx`
+
+## These commands should only be executed if the above command doesn't work
 `kubectl scale deploy -n ingress-nginx ingress-nginx --replicas=0`
 `kubectl scale deploy -n ingress-nginx ingress-nginx --replicas=1`
 

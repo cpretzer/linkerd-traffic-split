@@ -5,6 +5,7 @@
 ## Click booksapp under "HTTP metrics"
 ## Click webapp
 ## Click the Route Metrics tab
+`linkerd routes -n booksapp deploy/webapp`
 `linkerd profile --open-api module1/webapp.swagger webapp -n booksapp > module2/webapp-sp.yml`
 `kubectl apply -f module2/webapp-sp.yml -n booksapp`
 
@@ -15,6 +16,7 @@
 ## Click booksapp under "HTTP metrics"
 ## Click books
 ## Click the Route Metrics tab
+`linkerd routes -n booksapp deploy/books`
 `linkerd profile --open-api module1/books.swagger -n booksapp books > module2/books-sp.yml`
 `kubectl apply -f module1/books-sp.yml -n booksapp`
 
@@ -25,6 +27,7 @@
 ## Click booksapp under "HTTP metrics"
 ## Click authors
 ## Click the Route Metrics tab
+`linkerd routes -n booksapp deploy/authors`
 `linkerd profile --open-api module1/authors.swagger -n booksapp authors > module2/authors-sp.yml`
 `kubectl apply -f module1/authors-sp.yml -n booksapp`
 
@@ -57,6 +60,9 @@
 ## observe that EFFECTIVE_SUCCESS decreases
 ### This is visible in the dashboard as well
 `linkerd -n booksapp routes deploy/webapp --to svc/books -o wide`
+
+# edges review: update the nginx ingress controller to include the upstream
+`linkerd edges po -n booksapp`
 
 # update the traffic deployment to use the ingress endpoint
 ## change line 49 to: `- ingress-nginx.ingress-nginx:80`
