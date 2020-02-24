@@ -24,6 +24,7 @@ kind: Deployment
 apiVersion: apps/v1
 metadata:
   name: webapp
+  namespace: booksapp
   labels:
     app: webapp
 spec:
@@ -62,6 +63,7 @@ apiVersion: v1
 kind: Service
 metadata:
   name: authors
+  namespace: booksapp
   labels:
     app: authors
     project: booksapp
@@ -77,6 +79,7 @@ kind: Deployment
 apiVersion: apps/v1
 metadata:
   name: authors
+  namespace: booksapp
   labels:
     app: authors
     project: booksapp
@@ -116,6 +119,7 @@ apiVersion: v1
 kind: Service
 metadata:
   name: books
+  namespace: booksapp
   labels:
     app: books
     project: booksapp
@@ -131,6 +135,7 @@ kind: Deployment
 apiVersion: apps/v1
 metadata:
   name: books
+  namespace: booksapp
   labels:
     app: books
     project: booksapp
@@ -168,6 +173,7 @@ kind: Deployment
 apiVersion: apps/v1
 metadata:
   name: traffic
+  namespace: booksapp
   labels:
     app: traffic
     project: booksapp

@@ -1,0 +1,28 @@
+apiVersion: linkerd.io/v1alpha2
+kind: ServiceProfile
+metadata:
+  creationTimestamp: null
+  name: books.booksapp.svc.cluster.local
+  namespace: booksapp
+spec:
+  routes:
+  - condition:
+      method: GET
+      pathRegex: /books\.json
+    name: GET /books.json
+  - condition:
+      method: POST
+      pathRegex: /books\.json
+    name: POST /books.json
+  - condition:
+      method: DELETE
+      pathRegex: /books/[^/]*\.json
+    name: DELETE /books/{id}.json
+  - condition:
+      method: GET
+      pathRegex: /books/[^/]*\.json
+    name: GET /books/{id}.json
+  - condition:
+      method: PUT
+      pathRegex: /books/[^/]*\.json
+    name: PUT /books/{id}.json
